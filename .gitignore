@@ -1,1 +1,2 @@
-nab-env/
+.venv/
+.vscode/

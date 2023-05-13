@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from pandas import DataFrame
 import numpy as np
 import altair as alt
 from sklearn.ensemble import IsolationForest
@@ -48,17 +49,17 @@ def _dbscan_detector(values, column_name):
     return x_anomaly_index
 
 
-def anomaly_detection(values, column_name, serial_number):
+def anomaly_detection(values: DataFrame, column_name, serial_number):
     # Fill NaN values in pd.Series
     values = values.fillna(
         dict.fromkeys(values.columns.tolist(), values[column_name].ffill())
     )
 
     # Initial graph & added draw all selection values
-    X = values[column_name].index
-    Y = values[column_name].values
+    x = values[column_name].index
+    y = values[column_name].values
 
-    val = pd.DataFrame({"x": X, "y": Y})
+    val = pd.DataFrame({"x": x, "y": y})
 
     _chart = (
         alt.Chart(val)
@@ -79,8 +80,8 @@ def anomaly_detection(values, column_name, serial_number):
 
         for i in range(len(_iforest)):
             if _iforest[i] == "yes":
-                anomaly_points_x.append(X[i])
-                anomaly_points_y.append(Y[i])
+                anomaly_points_x.append(x[i])
+                anomaly_points_y.append(y[i])
 
     # DBSCAN, IForest algorithms
     elif column_name == "WaterLevel" or "TotalBytes":
@@ -89,13 +90,14 @@ def anomaly_detection(values, column_name, serial_number):
 
         for i in range(len(_iforest)):
             if _iforest[i] == "yes":
-                anomaly_points_x.append(X[i])
-                anomaly_points_y.append(Y[i])
+                anomaly_points_x.append(x[i])
+                anomaly_points_y.append(y[i])
 
         for i in _dbscan:
-            anomaly_points_x.append(X[i])
-            anomaly_points_y.append(Y[i])
+            anomaly_points_x.append(x[i])
+            anomaly_points_y.append(y[i])
 
+    # Draw anomaly data
     val = pd.DataFrame({"x": anomaly_points_x, "y": anomaly_points_y})
 
     _chart += (

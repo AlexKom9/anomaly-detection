@@ -1,4 +1,5 @@
 import os
+import streamlit as st
 import pandas as pd
 import pyodbc
 from adtk.data import validate_series
@@ -78,7 +79,7 @@ def get_data(device_id):
     if device_settings["Id"].values[0] == "" or device_settings["Id"].values[0] == None:
         return None
 
-    serial_num = device_settings["SerialNumber"].values[0]
+    serial_number = device_settings["SerialNumber"].values[0]
     IMEI = device_settings["IMEI"].values[0]
 
     data_conversion_constant_a = device_settings["DataConversionConstantA"].values[0]
@@ -103,8 +104,11 @@ def get_data(device_id):
 
         data["Timestamp"].values[i] = timestamp
 
+    # TODO: check may need return back
     data = pd.DataFrame(data).set_index("Timestamp")
-    data = validate_series(data)
+
+    # TODO: may need to leave
+    # data = validate_series(data)
 
     # Get stats GCOM Packages
     def get_statistic_satellite_device():
@@ -154,7 +158,7 @@ def get_data(device_id):
             .fillna(SentBytesArr)
         )
         DataFrame.rename(columns={"Body": "TotalBytes"}, inplace=True)
-        DataFrame.index.names = ["Timestamp"]
+        # DataFrame.index.names = ["Timestamp"]
 
         return DataFrame
 
@@ -196,11 +200,12 @@ def get_data(device_id):
         )
 
         DataFrame.rename(columns={"Message": "TotalBytes"}, inplace=True)
-        DataFrame.index.names = ["Timestamp"]
+        # DataFrame.index.names = ["Timestamp"]
 
         return DataFrame
 
-    def get_GCOM_data():
+    def get_data_gcom():
+        # TODO: refactor
         # Satellite
         if connection_type == 0:
             return get_statistic_satellite_device()
@@ -209,14 +214,14 @@ def get_data(device_id):
         if connection_type == 1:
             return get_statistic_cellular_device()
 
-    GCOM_PACKAGES = get_GCOM_data()
+    data_gcom_packages = get_data_gcom()
 
     return _normalize_data(
         [
             data,
-            GCOM_PACKAGES,
+            data_gcom_packages,
             {
-                "SerialNumber": serial_num,
+                "serial_number": serial_number,
                 "IMEI": IMEI,
                 "DataConversionConstantA": data_conversion_constant_a,
                 "DataConversionConstantB": data_conversion_constant_b,
